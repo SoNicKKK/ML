@@ -299,13 +299,13 @@ sns.despine()
 # 
 # *Write a brief discussion of your conclusions to the questions and tasks above in 100 words or less.*
 # 
-# We can see that average income of people in Europe and South America in 2015 in appreciably more that in 1985. One can see that distribution became less sharp. Area of high density for Europe was shifted from 10,000...25,000 to 20,000...40,000. Average income in South America is less than in Europe, but trend is the same.
+# We can see that average income of people in Europe and South America in 2015 is appreciably more that in 1985. One can see that distribution became less sharp. Area of high density for Europe was shifted from 10,000...25,000 to 20,000...40,000. Average income in South America is less than in Europe, but trend is the same.
 # 
-# Similar trend we can see for North America and Asis. But in contrast to Europe and South America, we can divide incomes in NA and Asis on two areas: small or medium (0...30,000 in NA and Asia) and high (40,000...60,000 in NA, 30,000...100,000 in Asia). It tells that there are social groups with very high incomes (much more average) in NA and Asia.
+# Similar trend we can see for North America and Asia. But in contrast to Europe and South America, we can divide incomes in NA and Asia on two areas: small or medium (0...30,000 in NA and Asia) and high (40,000...60,000 in NA, 30,000...100,000 in Asia). It tells that there are social groups with very high incomes (much more average) in NA and Asia.
 # 
 # Africa is still a poor region in 2015. Density of poorest people in Africa decreased, but most likely it's connected with overall decrease of incomes in Africa.
 # 
-# Trends of Oceania are very interesting. It seems that Oceania suffered from a kind of great crysis in 2000...2010, but nowadays situation become better.
+# Trends of Oceania are very interesting. It seems that Oceania suffered from a kind of great crysis in 2000...2010, but nowadays situation becomes better.
 # 
 # ---
 # 
