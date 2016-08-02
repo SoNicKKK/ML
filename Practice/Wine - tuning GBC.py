@@ -48,6 +48,8 @@ X.shape, y.shape
 
 
 # Because this problem is imbalanced, we'll use custom scorer for class selection. Let's classify item to class 1, if its probability is more than some `cutoff` value (we use `cutoff` = 0.3).
+# 
+# Also we will use f1-score as metrics. Using 'accuracy' as metrics seems not to be so good idea because of class imbalance.
 
 # In[217]:
 
@@ -214,7 +216,7 @@ modelfit(GradientBoostingClassifier(learning_rate=lr, n_estimators=ne, max_depth
                                    random_state=42), X_scaled, y)
 
 
-# In[233]:
+# In[239]:
 
 best_clf = GradientBoostingClassifier(learning_rate=0.1, n_estimators=40, max_depth=5, min_samples_split=5,
                                    min_samples_leaf=10, max_features=3, subsample=0.8, random_state=42)
@@ -222,10 +224,18 @@ for cutoff in np.arange(0.1, 0.51, 0.05):
     modelfit(best_clf, X_scaled, y, cutoff=cutoff)
 
 
-# In[234]:
+# In[240]:
 
 # Best result
+best_clf = GradientBoostingClassifier(learning_rate=0.1, n_estimators=40, max_depth=5, min_samples_split=5,
+                                   min_samples_leaf=10, max_features=3, subsample=0.8, random_state=42)
 modelfit(best_clf, X_scaled, y, cutoff=0.25)
+
+
+# In[247]:
+
+y_pred = [1 if y > 0.25 else 0 for y in best_clf.predict_proba(X_scaled)[:,1]]
+metrics.accuracy_score(y, y_pred)
 
 
 # In[235]:
