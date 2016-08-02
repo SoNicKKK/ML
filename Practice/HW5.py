@@ -30,7 +30,7 @@ get_ipython().magic('matplotlib inline')
 
 # Import only the data for **red** wine from the <a href='https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/'>dataset repository</a>. **Build a pandas dataframe** from the csv file and **print the head**. You might have to change the default delimiter used by the <a href='http://pandas.pydata.org/pandas-docs/stable/generated/pandas.io.parsers.read_csv.html'>read_csv</a> function in Pandas.
 
-# In[4]:
+# In[2]:
 
 url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv'
 df = pd.read_csv(url, sep=';')
@@ -43,7 +43,7 @@ df.head()
 # 
 # Also, we will simplify the problem to a binary world in which wines are either "bad" ($\text{score} < 7$) or "good" ($\text{score} \geq 7)$. **Change the $Y$ array** accordingly such that it only contains zeros ("bad" wines) and ones ("good" wines). For example, if originally $Y = [1,3,8,4,7]$, the new $Y$ should be $[0,0,1,0,1]$.
 
-# In[18]:
+# In[3]:
 
 Y = df['quality'].copy()
 X = df.drop('quality', axis=1).copy()
@@ -52,7 +52,7 @@ y = Y.apply(lambda x: 0 if x < 7 else 1)
 
 # Use the <a href='http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.as_matrix.html'>as_matrix</a> function in Pandas to **save the feature information in your data frame as a numpy array**. This is the $X$ matrix.
 
-# In[13]:
+# In[4]:
 
 X_m = X.as_matrix()
 Y_m = Y.as_matrix()
@@ -75,7 +75,7 @@ X_m.shape, Y_m.shape
 # 
 # Here, you should apply the random forest classifier to the wine data and use cross-validation to explore how the score of the classifier changes when varying the number of trees in the forest. Use the <a href='http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html'>random forest classifier</a> built into the scikit-learn library and the <a href='http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score'>cross_val_score</a> function (using the default scoring method) to **plot the scores of the random forests as a function of the number of trees** in the random forest, ranging from 1 (simple decision tree) to 40. You should use 10-fold cross-validation. Feel free to use the boxplot functionality of the <a href='http://web.stanford.edu/~mwaskom/software/seaborn/index.html'>seaborn</a> library.
 
-# In[27]:
+# In[5]:
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.cross_validation import cross_val_score
@@ -89,7 +89,7 @@ for n in np.arange(1, 41):
     res.append(cross_val_score(clf, X, y, cv=10))
 
 
-# In[39]:
+# In[6]:
 
 sns.set(style='whitegrid', context='notebook')
 plt.figure(figsize=(15, 5))
@@ -107,7 +107,7 @@ plt.show()
 # 
 # **Print** the percentage of wines that are labeled as "bad" in the dataset and **plot the same boxplot** as the last question (feel free to copy/paste), but this time draw a line across the plot denoting the **accuracy** of always guessing zero ("bad wine").
 
-# In[57]:
+# In[ ]:
 
 from sklearn import metrics
 const_m = metrics.accuracy_score(y, [0] * X.shape[0])
@@ -159,7 +159,7 @@ plt.show()
 
 # **(f)** For this part, **repeat the cross-validation analysis in part (b) changing the `scoring` parameter** of the cross_val_score function such that the measure used is the **F1 score**. **Comment** briefly on these numbers. Hint: See the <a href="http://scikit-learn.org/stable/modules/model_evaluation.html">scikit-learn documentation</a> for the options you can use for the *scoring* parameter.
 
-# In[60]:
+# In[ ]:
 
 res = []
 for n in np.arange(1, 41):
@@ -168,7 +168,7 @@ for n in np.arange(1, 41):
     res.append(cross_val_score(clf, X, y, cv=10, scoring='f1'))   
 
 
-# In[64]:
+# In[ ]:
 
 plt.figure(figsize=(15, 5))
 plt.boxplot(res)
@@ -189,7 +189,7 @@ plt.show()
 
 # **(a)** Fit a random forest classifier to the wine data **using 15 trees**. Compute the **predicted probabilities** that the classifier assigned to each of the training examples (Hint: Use the `predict_proba` method of the classifier after fitting.). As a **sanity test**, construct a prediction based on these predicted probabilities that labels all wines with a predicted probability of being in class 1 > 0.5 with a 1 and 0 otherwise. For example, if originally probabilities $= [0.1,0.4,0.5,0.6,0.7]$, the predictions should be $[0,0,0,1,1]$. **Compare** this to the output of the classifier's `predict` method, and **show that they are the same**. 
 
-# In[145]:
+# In[ ]:
 
 clf = RandomForestClassifier(n_estimators=15)
 clf.fit(X, y)
@@ -201,7 +201,7 @@ df_pp['class'] = df_pp.apply(lambda row: 0 if row[0] > 0.5 else 1, axis=1)
 
 # **(b)** **Write a function** `cutoff_predict` that takes a **trained** classifier, a data matrix X, and a cutoff, and generates predictions based on the classifier's predicted **probability and the cutoff value**, as you did in the previous question.
 
-# In[154]:
+# In[ ]:
 
 """
 cutoff_predict(clf, X, cutoff)
@@ -231,7 +231,7 @@ def cutoff_predict(clf, X, cutoff):
 # 
 # Using a **boxplot**, compare the **F1 scores** that correspond to each candidate **cutoff** value.
 
-# In[159]:
+# In[ ]:
 
 def custom_f1(cutoff):
     def f1_cutoff(clf, X, y):
@@ -250,7 +250,7 @@ for cutoff in np.arange(0.1, 1.0, 0.1):
     scores.append(cross_val_score(clf, X, y, cv=10, scoring=custom_f1(cutoff)))
 
 
-# In[160]:
+# In[ ]:
 
 sns.boxplot(data=scores)
 plt.xticks(np.arange(1, 10, 1), np.arange(0.1, 1.0, 0.1))
@@ -273,7 +273,7 @@ plt.show()
 # 
 # As you did in the last question, train a random forest classifier on the wine data using **15 trees**. Use the `feature_importances_` attribute of the classifier to obtain the relative importance of the features. These features are the columns of the dataframe. Show a simple **bar plot** showing the relative importance of the named features of the wines in the databes.
 
-# In[188]:
+# In[ ]:
 
 clf = RandomForestClassifier(n_estimators=15)
 clf.fit(X, y)
@@ -291,7 +291,7 @@ plt.ylabel('')
 # 
 # Using this function and the results from the "importance" analysis above, **subset** the data matrix to include just the **two features of highest importance**. Then **plot** the decision surfaces of a <a href='http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html#sklearn.tree.DecisionTreeClassifier'>decision tree classifier</a>,  and a random forest classifier with **number of trees set to 15**, and a <a href='http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC'> support vector machine</a> **with `C` set to 100, and `gamma` set to 1.0**. 
 
-# In[202]:
+# In[ ]:
 
 from sklearn.tree import DecisionTreeClassifier
 import sklearn.linear_model
@@ -343,10 +343,10 @@ for i in [1, 2, 3]:
 
 # **(d)** The <a href='http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC'> SVM</a> implementation of sklearn has an **optional parameter** `class_weight`. This parameter is set to `None` per default, but it also provides an `auto` mode, which uses the values of the labels Y to **automatically adjust weights** inversely proportional to class frequencies. As done in sub-problem 4(b), **draw the decision boundaries** for two SVM classifiers. **Use `C=1.0`, and `gamma=1.0`** for **both** models, but for the first SVM set `class_weigth` to **`None`**, and for the second SVM set `class_weigth` to **`'auto'`**. (Hint: `None` is a keyword in Python, whereas the `'auto'` is a String and needs the quotation marks.) 
 
-# In[206]:
+# In[ ]:
 
 clfs = {'SVM, no weighting':SVC(C=1.0, gamma=1.0, class_weight=None),
-        'SVM, balanced weighting':SVC(C=1.0, gamma=1.0, class_weight='balanced')}
+        'SVM, balanced weighting':SVC(C=100.0, gamma=10.0, class_weight='balanced')}
 plt.subplots(1, 2, figsize=(20, 5))
 for i in [1, 2]:
     plt.subplot(1, 2, i)
@@ -365,3 +365,9 @@ for i in [1, 2]:
 # 
 # To submit your homework, create a folder named **lastname_firstinitial_hw#** and place your IPython notebooks, data files, and any other files in this folder. Your IPython Notebooks should be completely executed with the results visible in the notebook. We should not have to run any code.  Compress the folder (please use .zip compression) and submit to the CS109 dropbox in the appropriate folder. *If we cannot access your work because these directions are not followed correctly, we will not grade your work.*
 # 
+
+# In[ ]:
+
+from sklearn import preprocessing
+X_scaled = preprocessing.scale(X)
+
