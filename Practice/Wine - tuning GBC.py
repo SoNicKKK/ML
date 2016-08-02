@@ -2,6 +2,10 @@
 # coding: utf-8
 
 # # Tuning Gradient Boosting Classifier
+# 
+# In this problem we'll examine the wine quality dataset hosted on the UCI website. This data records 11 chemical properties (such as the concentrations of sugar, citric acid, alcohol, pH etc.) of thousands of red and white wines from northern Portugal, as well as the quality of the wines, recorded on a scale from 1 to 10. In this problem, we will only look at the data for red wine.
+# 
+# We will use gradient boosting classifier to predict wine quality.
 
 # In[212]:
 
