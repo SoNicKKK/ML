@@ -1,27 +1,27 @@
 
 # coding: utf-8
 
-# In[76]:
+# In[2]:
 
 import numpy as np
 import pandas as pd
 
 
-# In[77]:
+# In[3]:
 
 df = pd.read_csv('./input/train.csv')
 df_init = df.copy(deep=True)
 #df = pd.read_csv('./input/test.csv')
 
 
-# In[78]:
+# In[4]:
 
 data_cols = [col for col in df.columns if col != 'label']
 df_data = df[data_cols]
 df_target = df.label
 
 
-# In[79]:
+# In[5]:
 
 print(len(df_data.columns))
 drop_list = []
@@ -34,26 +34,82 @@ df_data = df_data.drop(drop_list, axis=1)
 print(len(df_data.columns))
 
 
-# In[80]:
+# In[35]:
 
-# from sklearn.decomposition import PCA
-# pca = PCA(n_components=100)
-# pca.fit(df_data)
-# print(pca.explained_variance_ratio_.sum())
-# df_pca = pca.transform(df_data)
+import matplotlib.pyplot as plt
+get_ipython().magic('matplotlib inline')
+X = df_init[data_cols]
+X.head()
+plt.imshow((X.iloc[0].values / 16).astype(int).reshape(28, 28))
 
 
-# In[81]:
+# In[78]:
 
-# from sklearn import preprocessing
-# scaler = preprocessing.StandardScaler().fit(df_data)
-# df_scaled = scaler.transform(df_data)
+X_batch = X.iloc[:2000]
+X_batch.shape
+
+
+# In[84]:
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import cross_validation
+n_batch = 42000
+X_batch = X.iloc[:n_batch]
+y = df_init['label']
+y_batch = y.iloc[:n_batch]
+
+clf = RandomForestClassifier(n_estimators=80)
+X_train, X_test, y_train, y_test = cross_validation.train_test_split(X_batch, y_batch, test_size=0.4)
+clf.fit(X_train, y_train)
+print(clf.score(X_test, y_test))
+
+def binarize(x):
+    arr = x.values.reshape(28, 28)
+    eroded_square = ndimage.binary_erosion(arr)
+    reconstruction = ndimage.binary_propagation(eroded_square, mask=arr)
+    return pd.Series(reconstruction.astype(int).ravel())
+
+X_batch = X_batch.apply(lambda x: binarize(x), axis=1)
+clf = RandomForestClassifier(n_estimators=80)
+X_train, X_test, y_train, y_test = cross_validation.train_test_split(X_batch, y_batch, test_size=0.4)
+clf.fit(X_train, y_train)
+print(clf.score(X_test, y_test))
+
+
+# In[77]:
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import cross_validation
+clf = RandomForestClassifier(n_estimators=80)
+y = df_init['label']
+y_batch = y.iloc[:2000]
+X_train, X_test, y_train, y_test = cross_validation.train_test_split(X_batch, y_batch, test_size=0.33)
+clf.fit(X_train, y_train)
+clf.score(X_test, y_test)
+
+
+# In[59]:
+
+from scipy import misc
+from scipy import ndimage
+X_batch = X.iloc[:20]
+print(X_batch.shape)
+arr = X.iloc[0].values.reshape(28, 28)
+plt.subplots(1, 2)
+plt.subplot(1, 2, 1)
+plt.imshow(arr, cmap=plt.cm.gray, interpolation='nearest') 
+eroded_square = ndimage.binary_erosion(arr)
+reconstruction = ndimage.binary_propagation(eroded_square, mask=arr)
+plt.subplot(1, 2, 2)
+plt.imshow(reconstruction, cmap=plt.cm.gray)
+X.iloc[0] = reconstruction.astype(int).ravel()
 
 
 # In[82]:
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import cross_validation
+
 
 def rf(df_):
     clf = RandomForestClassifier(n_estimators=60)
@@ -65,21 +121,6 @@ _, sc = rf(df_data)
 print('no scale', sc)
 _, sc_scale = rf(df_data / 255)
 print('with scale', sc_scale)
-
-
-# In[95]:
-
-df_data_train = df_data.ix[:5000]
-df_target_train = df_target.ix[:5000]
-from sklearn.ensemble import GradientBoostingClassifier
-lr = 0.05
-n_est = 50
-
-for n in np.arange(30, 100, 10):
-    clf = GradientBoostingClassifier(learning_rate=lr, n_estimators=n)
-    X_train, X_test, y_train, y_test = cross_validation.train_test_split(df_data_train, df_target_train, test_size=0.33)
-    clf.fit(X_train, y_train)
-    print(n, clf.score(X_test, y_test))
 
 
 # Selected values: learning_rate = 0.05, n_estimators = 80

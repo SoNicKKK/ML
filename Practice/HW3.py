@@ -41,7 +41,7 @@
 
 # ## Load Python modules
 
-# In[458]:
+# In[1]:
 
 # special IPython command to prepare the notebook for matplotlib
 get_ipython().magic('matplotlib inline')
@@ -84,7 +84,7 @@ import sklearn.metrics
 # Fielding.csv | fielding
 # Master.csv | master
 
-# In[459]:
+# In[2]:
 
 teams = pd.read_csv('./input/Teams.csv')
 players = pd.read_csv('./input/Batting.csv')
@@ -97,14 +97,14 @@ master = pd.read_csv('./input/Master.csv')
 # 
 # Calculate the median salary for each player and create a pandas DataFrame called `medianSalaries` with four columns: (1) the player ID, (2) the first name of the player, (3) the last name of the player and (4) the median salary of the player. Show the head of the `medianSalaries` DataFrame.   
 
-# In[460]:
+# In[3]:
 
 master['median_sal'] = master.playerID.map(salaries.groupby('playerID').salary.median())
 medianSalaries = master[['playerID', 'nameFirst', 'nameLast', 'median_sal']]
 medianSalaries.head()
 
 
-# In[461]:
+# In[4]:
 
 pl_stat_cols = ['R', 'H', '2B', '3B', 'HR', 'RBI', 'SB', 'CS', 'BB', 'SO', 'IBB', 'HBP', 'SH', 'SF', 'GIDP']
 pl_cols = ['playerID', 'yearID', 'teamID'] + pl_stat_cols
@@ -113,7 +113,7 @@ for col in pl_stat_cols:
 players[(players.yearID == 2001) & (players.teamID == 'OAK')].sort_values('G', ascending=False)[pl_cols].head()
 
 
-# In[462]:
+# In[5]:
 
 f_stat_cols = ['PO', 'A', 'E', 'DP', 'PB', 'WP', 'SB', 'CS', 'ZR']
 for col in f_stat_cols:
@@ -122,7 +122,7 @@ f_cols = ['playerID', 'yearID', 'teamID'] + stat_cols
 fielding[(fielding.yearID == 2001) & (fielding.teamID == 'OAK')].sort_values('G', ascending=False)[f_cols].head()
 
 
-# In[463]:
+# In[ ]:
 
 total_stats = pd.merge(players[pl_cols], fielding[f_cols], on=['playerID', 'yearID', 'teamID'])
 total_stats.fillna(0, inplace=True)
@@ -130,18 +130,18 @@ total_stats = total_stats[total_stats.yearID < 2002].sort_values(['yearID', 'tea
 total_stats.head()
 
 
-# In[464]:
+# In[ ]:
 
 team_stats = total_stats[total_stats.yearID >= 1962].groupby(['yearID', 'teamID']).mean()
 team_stats.head()
 
 
-# In[465]:
+# In[ ]:
 
 ts = team_stats.join(teams.groupby(['yearID', 'teamID']).W.mean())
 
 
-# In[466]:
+# In[ ]:
 
 from sklearn.linear_model import LinearRegression
 clf = LinearRegression()
@@ -149,7 +149,7 @@ clf.fit(ts.iloc[:,:-1], ts.iloc[:, -1])
 ts.iloc[:,:-1].shape, ts.iloc[:, -1].shape
 
 
-# In[467]:
+# In[ ]:
 
 medianSalaries = medianSalaries[medianSalaries.median_sal.notnull()].sort_values('median_sal', ascending=False)
 salaries10 = medianSalaries[medianSalaries.median_sal < 1000000].head(20)
@@ -158,14 +158,14 @@ ts_cols = ['R', 'H', '2B', '3B', 'HR', 'RBI', 'SB_x', 'CS_x', 'BB', 'SO', 'IBB',
        'CS_y', 'ZR']
 
 
-# In[468]:
+# In[ ]:
 
 salaries10_corr = salaries10.set_index('playerID')    .join(total_stats.drop(['yearID', 'teamID'], axis=1).groupby('playerID').mean())    .dropna(subset=[ts_cols]).head(10)
 print('Picked players (payroll = %d):' % salaries10_corr.median_sal.sum())
 salaries10_corr
 
 
-# In[469]:
+# In[ ]:
 
 #clf.predict(salaries10_corr[ts_cols].mean())
 clf.predict(salaries10_corr[ts_cols].mean().reshape(1, -1))
@@ -177,7 +177,7 @@ clf.predict(salaries10_corr[ts_cols].mean().reshape(1, -1))
 # 
 # **Hint**: Singles are hits that are not doubles, triples, nor HR. Plate appearances are base on balls plus at bats.
 
-# In[470]:
+# In[ ]:
 
 teams['1B'] = teams.H - teams['2B'] - teams['3B'] - teams.HR
 teams['PA'] = teams.BB + teams.AB
@@ -193,7 +193,7 @@ stats.head()
 # 
 # Is there a noticeable time trend in the rates computed computed in Problem 1(c)? 
 
-# In[471]:
+# In[ ]:
 
 import seaborn as sns
 sns.set(style='whitegrid', context='talk')
@@ -213,7 +213,7 @@ for col in cols:
 # 
 # Using the `stats` DataFrame from Problem 1(c), adjust the singles per PA rates so that the average across teams for each year is 0. Do the same for the doubles, triples, HR, and BB rates. 
 
-# In[472]:
+# In[ ]:
 
 from sklearn.preprocessing import scale
 gs = stats.groupby('yearID')
@@ -228,7 +228,7 @@ stats.head()
 # Build a simple linear regression model to predict the number of wins from the average adjusted singles, double, triples, HR, and BB rates. To decide which of these terms to include fit the model to data from 2002 and compute the average squared residuals from predictions to years past 2002. Use the fitted model to define a new sabermetric summary: offensive predicted wins (OPW). Hint: the new summary should be a linear combination of one to five of the five rates.
 # 
 
-# In[473]:
+# In[ ]:
 
 from sklearn.linear_model import LinearRegression
 
@@ -250,7 +250,7 @@ print('Coefs:', np.round(clf.coef_, 2))
 # 
 # Now we will create a similar database for individual players. Consider only player/year combinations in which the player had at least 500 plate appearances. Consider only the years we considered for the calculations above (after 1947 and seasons with 162 games). For each player/year compute singles, doubles, triples, HR, BB per plate appearance rates. Create a new pandas DataFrame called `playerstats` that has the playerID, yearID and the rates of these stats.  Remove the average for each year as for these rates as done in Problem 1(e). 
 
-# In[474]:
+# In[ ]:
 
 players = pd.read_csv('./input/Batting.csv')
 players['PA'] = players.AB + players.BB
@@ -261,7 +261,7 @@ playerstats = players[(players.yearID >= 1962) & (players.PA >= 500)][['playerID
 
 # Show the head of the `playerstats` DataFrame. 
 
-# In[475]:
+# In[ ]:
 
 from sklearn.preprocessing import scale
 gs = playerstats.groupby('yearID')
@@ -275,7 +275,7 @@ playerstats.head()
 # 
 # Using the `playerstats` DataFrame created in Problem 1(g), create a new DataFrame called `playerLS` containing the player's lifetime stats. This DataFrame should contain the playerID, the year the player's career started, the year the player's career ended and the player's lifetime average for each of the quantities (singles, doubles, triples, HR, BB). For simplicity we will simply compute the avaerage of the rates by year (a more correct way is to go back to the totals). 
 
-# In[476]:
+# In[ ]:
 
 playerLS = pd.DataFrame(playerstats.playerID.unique(), columns=['playerID'])
 playerLS['year_start'] = playerLS.playerID.map(players.groupby('playerID').yearID.min())
@@ -285,7 +285,7 @@ playerLS = playerLS.set_index('playerID').join(playerstats.groupby('playerID')[c
 
 # Show the head of the `playerLS` DataFrame. 
 
-# In[477]:
+# In[ ]:
 
 playerLS.head()
 
@@ -294,7 +294,7 @@ playerLS.head()
 # 
 # Compute the OPW for each player based on the average rates in the `playerLS` DataFrame. You can interpret this summary statistic as the predicted wins for a team with 9 batters exactly like the player in question. Add this column to the playerLS DataFrame. Call this column OPW.
 
-# In[478]:
+# In[ ]:
 
 playerLS['OPW'] = clf.predict(playerLS[cols])
 playerLS = playerLS.reset_index()
@@ -305,7 +305,7 @@ playerLS.head()
 # 
 # Add four columns to the `playerLS` DataFrame that contains the player's position (C, 1B, 2B, 3B, SS, LF, CF, RF, or OF), first name, last name and median salary. 
 
-# In[479]:
+# In[ ]:
 
 playerLS['pos'] = playerLS.playerID.map(fielding.drop_duplicates('playerID').set_index('playerID').POS)
 if 'median_sal' not in playerLS.columns:
@@ -314,7 +314,7 @@ if 'median_sal' not in playerLS.columns:
 
 # Show the head of the `playerLS` DataFrame. 
 
-# In[480]:
+# In[ ]:
 
 playerLS.head()
 
@@ -323,7 +323,7 @@ playerLS.head()
 # 
 # Subset the `playerLS` DataFrame for players active in 2002 and 2003 and played at least three years. Plot and describe the relationship bewteen the median salary (in millions) and the predicted number of wins. 
 
-# In[542]:
+# In[ ]:
 
 sns.set_context('notebook')
 playerLS3 = playerLS[(playerLS.year_start <= 2002) & (playerLS.year_end >= 2003) 
@@ -336,14 +336,14 @@ plt.ylabel('Predicted wins')
 # #### Problem 1(l)
 # Pick one players from one of each of these 10 position C, 1B, 2B, 3B, SS, LF, CF, RF, DH, or OF keeping the total median salary of all 10 players below 20 million. Report their averaged predicted wins and total salary.
 
-# In[544]:
+# In[ ]:
 
 p = np.poly1d(np.polyfit(playerLS3.median_sal, playerLS3.OPW, deg=1))
 playerLS3['res'] = playerLS3.OPW - p(playerLS3.median_sal)
 cols = ['nameFirst', 'nameLast', 'pos', 'OPW', 'median_sal', 'res']
 
 
-# In[556]:
+# In[ ]:
 
 def get_max_salary(sl, sp):        
     return sl - playerLS3[playerLS3.pos.isin(sp) == False].groupby('pos').median_sal.min().sum()
@@ -367,7 +367,7 @@ print(sel.OPW.mean())
 # #### Problem 1(m)
 # What do these players outperform in? Singles, doubles, triples HR or BB?
 
-# In[562]:
+# In[ ]:
 
 playerLS3.ix[sel_pl][['playerID', '1B', '2B', '3B', 'HR', 'BB']].mean()
 
@@ -392,7 +392,7 @@ playerLS3.ix[sel_pl][['playerID', '1B', '2B', '3B', 'HR', 'BB']].mean()
 # 
 # The data set is so popular, that sklearn provides an extra function to load it:
 
-# In[564]:
+# In[ ]:
 
 #load the iris data set
 iris = sklearn.datasets.load_iris()
@@ -403,7 +403,7 @@ Y = iris.target
 print(X.shape, Y.shape)
 
 
-# In[618]:
+# In[ ]:
 
 pd.tools.plotting.scatter_matrix(pd.DataFrame(X), figsize=(10, 8))
 plt.show()
@@ -412,7 +412,7 @@ plt.show()
 # #### Problem 2(a) 
 # Split the data into a train and a test set. Use a random selection of 33% of the samples as test data. Sklearn provides the [`train_test_split`](http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.train_test_split.html) function for this purpose. Print the dimensions of all the train and test data sets you have created. 
 
-# In[574]:
+# In[ ]:
 
 from sklearn import cross_validation
 X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, Y, test_size=0.33)
@@ -423,7 +423,7 @@ X_train.shape, X_test.shape
 # 
 # Examine the data further by looking at the projections to the first two principal components of the data. Use the [`TruncatedSVD`](http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.TruncatedSVD.html) function for this purpose, and create a scatter plot. Use the colors on the scatter plot to represent the different classes in the target data. 
 
-# In[621]:
+# In[ ]:
 
 from sklearn.decomposition import TruncatedSVD
 svd = TruncatedSVD(n_components=2)
@@ -446,7 +446,7 @@ plt.scatter(df_svd[df_svd.res == 2].pc1, df_svd[df_svd.res == 2].pc2, c='g')
 # 
 # **Note**: For your convenience sklearn does not only include the [KNN classifier](http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html), but also a [grid search function](http://scikit-learn.org/stable/modules/generated/sklearn.grid_search.GridSearchCV.html#sklearn.grid_search.GridSearchCV). The function is called grid search, because if you have to optimize more than one parameter, it is common practice to define a range of possible values for each parameter. An exhaustive search then runs over the complete grid defined by all the possible parameter combinations. This can get very computation heavy, but luckily our KNN classifier only requires tuning of a single parameter for this problem set. 
 
-# In[677]:
+# In[ ]:
 
 from sklearn.grid_search import GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
@@ -459,7 +459,7 @@ clf.fit(X_train, y_train)
 # 
 # Visualize the result by plotting the score results versus values for $k$. 
 
-# In[678]:
+# In[ ]:
 
 res = [score.cv_validation_scores for i, score in enumerate(clf.grid_scores_)]
 plt.scatter(np.arange(1, 21), np.mean(res, axis=1), c='black')
@@ -470,7 +470,7 @@ plt.show()
 
 # Verify that the grid search has indeed chosen the right parameter value for $k$.
 
-# In[688]:
+# In[ ]:
 
 best_n = clf.best_estimator_.n_neighbors
 clf.best_params_
@@ -480,7 +480,7 @@ clf.best_params_
 # 
 # Test the performance of our tuned KNN classifier on the test set.
 
-# In[715]:
+# In[ ]:
 
 knn = KNeighborsClassifier(n_neighbors=best_n)
 from sklearn.cross_validation import KFold
@@ -509,7 +509,7 @@ print(np.round(np.mean(sc), 2), np.round(np.std(sc), 2))
 # 
 # First we again load our data set.
 
-# In[717]:
+# In[6]:
 
 digits = sklearn.datasets.load_digits()
 
@@ -517,6 +517,11 @@ X = digits.data
 Y = digits.target
 
 print(X.shape, Y.shape)
+
+
+# In[8]:
+
+
 
 
 # #### Problem 3(a) 
