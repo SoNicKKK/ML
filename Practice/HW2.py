@@ -38,7 +38,7 @@
 
 # ## Load Python modules
 
-# In[134]:
+# In[293]:
 
 # special IPython command to prepare the notebook for matplotlib
 get_ipython().magic('matplotlib inline')
@@ -56,14 +56,14 @@ import numpy.linalg as lin # module for performing linear algebra operations
 # 
 # In this problem we will be using a [gene expression](http://en.wikipedia.org/wiki/Gene_expression) data set obtained from a [microarray](http://en.wikipedia.org/wiki/DNA_microarray) experiement [Read more about the specific experiment here](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE5859).  There are two data sets we will use:  
 # 
-# 1. The gene expression intensities where the rows represent the features on the microarray (e.g. genes) and the columsns represent the different microarray samples.  
+# 1. The gene expression intensities where the rows represent the features on the microarray (e.g. genes) and the columns represent the different microarray samples.  
 # 
 # 2. A table that contains the information about each of the samples (columns in the gene expression data set) such as the sex, the age, the treatment status, the date the samples were processed.  Each row represents one sample. 
 
 # #### Problem 1(a) 
 # Read in the two files from Github: [exprs_GSE5859.csv](https://github.com/cs109/2014_data/blob/master/exprs_GSE5859.csv) and [sampleinfo_GSE5859.csv](https://github.com/cs109/2014_data/blob/master/sampleinfo_GSE5859.csv) as pandas DataFrames called `exprs` and `sampleinfo`. Use the gene names as the index of the `exprs` DataFrame.
 
-# In[135]:
+# In[294]:
 
 #url = 'https://github.com/cs109/2014_data/blob/master/exprs_GSE5859.csv'
 #df = pd.read_csv(url, sep=',')
@@ -84,21 +84,20 @@ sampleinfo = pd.read_csv(s2)
 # 
 # Example code: `(exprs.columns == sampleinfo.filename).all()`
 
-# In[136]:
+# In[295]:
 
-#exprs = exprs[['Unnamed: 0'] + list(samples.filename.unique())]
 exprs = exprs[list(sampleinfo.filename.unique())]
 exprs.columns
 
 
 # Show the head of the two tables: `exprs` and `sampleinfo`. 
 
-# In[137]:
+# In[296]:
 
 exprs.head()
 
 
-# In[138]:
+# In[297]:
 
 sampleinfo.head()
 
@@ -109,7 +108,7 @@ sampleinfo.head()
 # 
 # **Hint**: To convert a Series or a column of a pandas DataFrame that contains a date-like object, you can use the `to_datetime` function [[read here](http://pandas.pydata.org/pandas-docs/stable/timeseries.html)].  This will create a `DatetimeIndex` which can be used to extract the month and year for each row in the DataFrame. 
 
-# In[139]:
+# In[298]:
 
 #your code here
 import datetime
@@ -126,7 +125,7 @@ sampleinfo.head()
 # 
 # **Hint**: Use the `datetime` module to create a new `datetime` object for the specific date October 31, 2002. Then, subtract the October 31, 2002 date from each date from the `date` column in the `sampleinfo` DataFrame. 
 
-# In[140]:
+# In[299]:
 
 #your code here
 sampleinfo['elapsedInDays'] = sampleinfo.date - datetime.datetime(2002, 10, 31)
@@ -141,7 +140,7 @@ sampleinfo.head()
 # 
 # First subset the the `sampleinfo` DataFrame to include only the CEU ethnicity.  Call this new subsetted DataFrame `sampleinfoCEU`.  Show the head of `sampleinfoCEU` DataFrame. 
 
-# In[141]:
+# In[300]:
 
 #your code here
 sampleinfoCEU = sampleinfo[sampleinfo.ethnicity == 'CEU']
@@ -150,7 +149,7 @@ sampleinfoCEU.head()
 
 # Next, subset the `exprs` DataFrame to only include the samples with the CEU ethnicity. Name this new subsetted DataFrame `exprsCEU`. Show the head of the `exprsCEU` DataFrame. 
 
-# In[142]:
+# In[301]:
 
 exprsCEU = exprs[[col for col in exprs.columns if col in sampleinfoCEU.filename.unique()]]
 exprsCEU.head()
@@ -158,60 +157,74 @@ exprsCEU.head()
 
 # Check to make sure the order of the columns in the `exprsCEU` DataFrame matches the rows in the `sampleinfoCEU` DataFrame.  
 
-# In[143]:
+# In[302]:
 
 (exprsCEU.columns == sampleinfoCEU.filename).all()
 
 
 # Compute the average gene expression intensity in the `exprsCEU` DataFrame across all the samples. For each sample in the `exprsCEU` DataFrame, subtract the average gene expression intensity from each of the samples. Show the head of the mean normalized gene expression data.  
 
-# In[149]:
+# In[303]:
 
 exprsCEU_norm = exprsCEU.apply(lambda x: x - x.mean())
 exprsCEU_norm.head()
+
+
+# In[304]:
+
+plt.scatter(exprsCEU_norm.ix[3], exprsCEU_norm.ix[10])
 
 
 # Using this mean normalized gene expression data, compute the projection to the first Principal Component (PC1).  
 # 
 # **Hint**: Use the `numpy.linalg.svd()` function in the `numpy.linalg` module (or the `scipy.linalg.svd()` function in the `scipy.linalg` module) to apply an [singular value decomposition](http://en.wikipedia.org/wiki/Singular_value_decomposition) to a matrix.  
 
-# In[153]:
+# In[305]:
 
-get_ipython().magic('pinfo sp.linalg.svd')
+U, S, V = np.linalg.svd(exprsCEU_norm)
 
 
-# In[151]:
+# In[306]:
 
-import scipy as sp
-sp.linalg.svd(exprsCEU_norm)
+svd_pc1 = V[0,:]
+
+
+# In[307]:
+
+# from sklearn.decomposition import pca
+# clf = pca.PCA()
+# exprsCEU_norm_pca = clf.fit_transform(exprsCEU_norm.transpose())
+# print(clf.explained_variance_ratio_[:5])
+# import seaborn as sns
+# sns.set(style='ticks', context='notebook')
+# sns.distplot(exprsCEU_norm_pca[0], bins=25, kde=False)
 
 
 # Create a histogram using the values from PC1.  Use a bin size of 25.  
 
-# In[11]:
+# In[308]:
 
-#your code here
+import seaborn as sns
+sns.set(style='ticks', context='notebook')
+sns.distplot(svd_pc1, bins=25, kde=False)
 
 
 # Create a scatter plot with the days since October 31, 2002 on the x-axis and PC1 on the y-axis.
-
-# In[12]:
-
-#your code here
-
-
+# 
 # Around what day do you notice a difference in the way the samples were processed?
 
-# In[13]:
+# In[309]:
 
-#your code here
+plt.scatter(sampleinfoCEU.elapsedInDays.apply(lambda x: pd.to_timedelta(x).days), svd_pc1)
 
 
-# Answer:
+# Answer: ???
 
 # ## Discussion for Problem 1
 # 
 # *Write a brief discussion of your conclusions to the questions and tasks above in 100 words or less.*
+# 
+# I don't know any pros in using SVD. I just don't understand it. Using sklearn.decomposition.PCA seems to be much more clearer.
 # 
 # ---
 # 
@@ -224,37 +237,40 @@ sp.linalg.svd(exprsCEU_norm)
 # 
 # Read in the polls from the [2012 Presidential Election: Barack Obama vs Mitt Romney](http://elections.huffingtonpost.com/pollster/2012-general-election-romney-vs-obama) into a pandas DataFrame called `election`. For this problem, you may read in the polls for this race directly using [the CSV file](http://elections.huffingtonpost.com/pollster/2012-general-election-romney-vs-obama.csv) available from the HuffPost Pollster page.
 
-# In[14]:
+# In[310]:
 
-#your code here
+url = 'http://elections.huffingtonpost.com/pollster/2012-general-election-romney-vs-obama.csv'
+election = pd.read_csv(url, parse_dates=['Start Date', 'End Date'])
 
 
 # Show the head of the `election` DataFrame. 
 
-# In[15]:
+# In[311]:
 
-#your code here
+election.head()
 
 
 # How many polls were conducted in November? Define this number as M.  
 # 
 # **Hint**: Subset the `election` DataFrame for only dates in the `Start Date` column that are in November 2012.  
 
-# In[16]:
+# In[312]:
 
-#your code here
+nov = election[election['Start Date'].apply(lambda x: (x.month == 11) & (x.year == 2012))].drop_duplicates('Pollster')
+len(nov.index)
 
 
-# Answer:
+# Answer: 18
 
 # What was the median of the number of observations in the November polls? Define this quantity as N. 
 
-# In[17]:
+# In[313]:
 
-#your code here
+N = nov['Number of Observations'].median()
+print(N)
 
 
-# Answer: 
+# Answer: 1200
 
 # #### Problem 2(b)
 # 
@@ -262,121 +278,135 @@ sp.linalg.svd(exprsCEU_norm)
 # 
 # **Hint**: Use the binomial distribution with parameters $N$ and $p$ = 0.53. 
 
-# In[18]:
+# In[314]:
 
-#your code here
+np.random.binomial(n=N, p=0.53)
 
 
 # Now, perform a Monte Carlo simulation to obtain the estimated percentage of Obama votes with a sample size $N$ where $N$ is the median sample size calculated in Problem 2(a). Let $p$=0.53 be the percent of voters are voting for Obama. 
 # 
 # **Hint**: You will repeat the simulation above 1,000 times and plot the distribution of the estimated *percent* of Obama votes from a single poll.  The results from the single poll you simulate is random variable and will be different every time you sample. 
 
-# In[19]:
+# In[315]:
 
-#your code here
+votes = []
+for i in range(1000):
+    votes.append(np.random.binomial(n=N, p=0.53) / N)
+plt.scatter(np.arange(0, 1000), votes)
 
 
 # Plot the distribution of the estimated percentage of Obama votes from your single poll. What is the distribution of the estimated percentage of Obama votes? 
 
-# In[20]:
+# In[316]:
 
-#your code here
+sns.distplot(votes, label='Mean = %.2f' % np.mean(votes))
+plt.legend(loc='best')
 
 
-# Answer: 
+# Answer: normal distribution with mean = 53.02
 
 # What is the standard error (SE) of the estimated percentage from the poll. 
 # 
 # **Hint**: Remember the SE is the standard deviation (SD) of the distribution of a random variable. 
 
-# In[21]:
+# In[317]:
 
-#your code here
+print('Standard error = %.5f' % np.std(votes))
 
 
 # #### Problem 2(c)
 # 
 # Now suppose we run M polls where M is the number of polls that happened in November (calculated in Problem 2(a)). Run 1,000 simulations and compute the mean of the M polls for each simulation. 
 
-# In[22]:
+# In[318]:
 
-#your code here
+M = len(nov.index)
+per_M = [np.mean(np.random.binomial(n=1, p=0.53, size=1000)) for i in range(M)]
 
 
 # What is the distribution of the average of polls?
 # 
 # **Hint**: Show a plot. 
 
-# In[23]:
+# In[319]:
 
-#your code here
+sns.distplot(per_M, label='Mean = %.2f' % np.mean(per_M))
+plt.legend()
 
 
-# Answer: 
+# Answer: distribution seems to be normal with mean = 53.00
 
 # What is the standard error (SE) of the average of polls? 
 
-# In[24]:
+# In[320]:
 
-#your code here
+print('SE = %.5f' % np.std(per_M))
 
 
-# Answer: 
+# Answer: standard error = 0.01809
 
 # Is the SE of the average of polls larger, the same, or smaller than that the SD of a single poll (calculated in Problem 2(b))? By how much?
 # 
 # **Hint**: Compute a ratio of the two quantities.  
 
-# In[25]:
+# In[321]:
 
-#your code here
+rat = np.std(votes) / np.std(per_M)
+print('Ratio = %.4f' % rat)
 
 
-# Answer: 
+# Answer: SE of the average polls is 40 times smaller than the SE of a single poll.
 
 # #### Problem 2(d) 
 # 
 # Repeat Problem 2(c) but now record the *across poll* standard deviation in each simulation. 
 
-# In[26]:
+# In[322]:
 
-#your code here
+M = len(nov.index)
+se = []
+for i in range(M):
+    votes_per = np.random.binomial(n=N, p=0.53, size=1000) / N
+    se.append(np.std(votes_per))
+    
+print(se)
 
 
 # What is the distribution of the *across M polls* standard deviation?
 # 
 # **Hint**: Show a plot. 
 
-# In[27]:
+# In[323]:
 
-#your code here
+sns.distplot(se, label='Mean = %.5f' % np.mean(se))
+plt.legend()
 
 
-# Answer: 
+# Answer: distribution seems to be normal with mean = 0.01448.
 
 # #### Problem 2(e) 
 # 
 # What is the standard deviation of M polls in our real (not simulated) 2012 presidential election data ? 
 
-# In[28]:
+# In[324]:
 
-#your code here
+print('SE of real polls = %.5f' % (nov.Obama / 100).std())
 
 
 # Is this larger, the same, or smaller than what we expeced if polls were not biased.
 
-# In[29]:
+# In[325]:
 
-#your code here
+(nov.Obama / 100).std() / np.std(votes)
 
 
-# Answer: 
+# Answer: real SE is a bit smaller than 'synthetic' SE for one poll.
 
 # #### Problem 2(f)
 # 
 # **For AC209 Students**: Learn about the normal approximation for the binomial distribution and derive the results of Problem 2(b) and 2(c) analytically (using this approximation). Compare the results obtained analytically to those obtained from simulations.
 
-# In[30]:
+# In[326]:
 
 #your code here
 
@@ -398,27 +428,35 @@ sp.linalg.svd(exprsCEU_norm)
 # 
 # Add a new column to the `election` DataFrame containg the difference between Obama and Romeny called `Diff`. 
 
-# In[31]:
+# In[327]:
 
-#your code here
+election['Diff'] = election.Obama - election.Romney
+election[['Pollster', 'Obama', 'Romney', 'Diff']].head()
 
 
 # #### Problem 3(b)
 # 
 # Make a plot of the differences for the week before the election (e.g. 5 days) where the days are on the x-axis and the differences are on the y-axis.  Add a horizontal line showing 3.9%: the difference between Obama and Romney on election day.
 
-# In[32]:
+# In[328]:
 
-#your code here
+cols = ['Pollster', 'Start Date', 'End Date', 'Obama', 'Romney', 'Diff', 'days_till']
+last_day = max(election["Start Date"])
+election['days_till'] = (last_day - election['Start Date']).apply(lambda x: pd.to_timedelta(x).days)
+week = election[election['Start Date'].apply(lambda x: (last_day - x).days <= 5)].sort_values('days_till')
+ax = plt.scatter(week.days_till, week.Diff)
+plt.plot(np.linspace(-1, 6, 100), [3.9]*100, 'r--', lw=1.0)
+plt.title('Diff between Obama and Romney in the last week')
+sns.despine()
 
 
 # #### Problem 3(c) 
 # 
 # Make a plot showing the differences by pollster where the pollsters are on the x-axis and the differences on the y-axis. 
 
-# In[33]:
+# In[329]:
 
-#your code here
+week.Pollster.value_counts()
 
 
 # Is the *across poll* difference larger than the *between pollster* difference? 
@@ -431,23 +469,29 @@ sp.linalg.svd(exprsCEU_norm)
 # 
 # **Hint**: Compute an estimate of the SE of this average based exclusively on the observed data. 
 
-# In[34]:
+# In[330]:
 
-#your code here
+polls = week.groupby('Pollster').Diff.mean()
+print('Obama diff = %.2f +/- %.4f' % (polls.mean(), polls.std()))
 
 
-# Answer: 
+# Answer: SE is larger than mean. So, Romney had a chance to win.
 
 # #### Problem 3(e)
 # 
 # **For AC209 Students**: Show the difference against time and see if you can detect a trend towards the end. Use this trend to see if it improves the final estimate.
 
-# In[35]:
+# In[334]:
 
-#your code here
+#plt.plot(election[election.days_till < 100].groupby('Start Date')['Diff'].mean())
+election[election.days_till < 100].groupby('Start Date')['Diff'].mean().plot()
+f = election[election.days_till < 100].groupby('days_till')['Diff'].mean().reset_index()
+coef = np.polyfit(f.days_till, f.Diff, deg=5)
+p = np.poly1d(coef)
+plt.plot(election[election.days_till < 100].groupby('Start Date')['Diff'].mean().index, p(f.days_till), 'r--', lw=1.0)
 
 
-# Answer: 
+# Answer: At the beginning of October (one month before election) Romney was slightly better, but then Obama advantage started to rise.
 
 # ## Discussion for Problem 3
 # 
@@ -468,14 +512,14 @@ sp.linalg.svd(exprsCEU_norm)
 # 
 # To search for the 2014 Senate races, use the `topics` parameter in the API [[read more about topics here](http://elections.huffingtonpost.com/pollster/api)].  
 
-# In[36]:
+# In[ ]:
 
 url_str = "http://elections.huffingtonpost.com/pollster/api/charts/?topic=2014-senate"
 
 
 # To list all the URLs related to the 2014 Senate races using the pollster API, we can use a list comprehension:
 
-# In[37]:
+# In[ ]:
 
 election_urls = [election['url'] + '.csv' for election in requests.get(url_str).json()]
 election_urls
@@ -483,7 +527,7 @@ election_urls
 
 # Because there so many Senate races, we can create a dictionary of pandas DataFrames that will be keyed by the name of the election (a string). 
 
-# In[38]:
+# In[ ]:
 
 def build_frame(url):
     """
@@ -499,7 +543,7 @@ def build_frame(url):
             convert_dates="coerce", convert_numeric=True)
 
 
-# In[39]:
+# In[ ]:
 
 # Makes a dictionary of pandas DataFrames keyed on election string.
 dfs = dict((election.split("/")[-1][:-4], build_frame(election)) for election in election_urls)
@@ -507,7 +551,7 @@ dfs = dict((election.split("/")[-1][:-4], build_frame(election)) for election in
 
 # Show the head of the DataFrame containing the polls for the 2014 Senate race in Kentucky between McConnell and Grimes.
 
-# In[40]:
+# In[ ]:
 
 #your code here
 
@@ -516,7 +560,7 @@ dfs = dict((election.split("/")[-1][:-4], build_frame(election)) for election in
 # 
 # For each 2014 Senate race, create a preliminary prediction of the result for that state.
 
-# In[42]:
+# In[ ]:
 
 #your code here
 
